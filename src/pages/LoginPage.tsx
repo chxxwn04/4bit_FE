@@ -1,16 +1,131 @@
 import { useState, type FormEvent } from "react";
 import watermark from "../assets/images/watermark_converted.png";
+import styled from "@emotion/styled";
+
+const PageContainer = styled.div`
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+`;
+
+const LoginBox = styled.div`
+  position: relative;
+  width: 100%;
+  max-width: 42rem;
+  border: 2px solid rgba(220, 252, 231, 0.7);
+  border-radius: 0.5rem;
+  padding: 3rem;
+  overflow: hidden;
+
+  @media (min-width: 768px) {
+    padding: 4rem;
+  }
+`;
+
+const WatermarkImage = styled.img`
+  pointer-events: none;
+  user-select: none;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  margin: auto;
+  width: 300px;
+  opacity: 0.2;
+`;
+
+const TitleContainer = styled.h1`
+  position: relative;
+  text-align: center;
+
+  font-family: Pretendard, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: #325694;
+  opacity: 1;
+`;
+
+const MainTitle = styled.span`
+  display: block;
+  font-size: 72px;
+  line-height: 1;
+`;
+
+const SubTitle = styled.span`
+  display: block;
+  font-size: 70px;
+  margin-top: 0.5rem;
+  line-height: 1;
+`;
+
+const LoginForm = styled.form`
+  position: relative;
+  margin-top: 4rem;
+
+  & > div:not(:last-child) {
+    margin-bottom: 2.5rem;
+  }
+  max-width: 24rem;
+  margin-left: auto;
+  margin-right: auto;
+`;
+
+const InputLabel = styled.label`
+  display: block;
+  font-size: 1.25rem;
+  color: #6b7280;
+`;
+
+const InputField = styled.input`
+  margin-top: 0.25rem;
+  width: 100%;
+  background-color: transparent;
+  border: none;
+  border-bottom: 3px solid #325694;
+  outline: none;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+
+  &:focus {
+    border-bottom-color: #08457e;
+  }
+`;
+
+const LoginButton = styled.button`
+  display: block;
+  width: 11rem;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 1rem;
+  background-color: #325694;
+  color: white;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  font-weight: 500;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.2s;
+  cursor: pointer;
+  border: none;
+
+  &:hover {
+    background-color: #08457e;
+  }
+
+  &:active {
+    transform: scale(0.99);
+  }
+`;
 
 export default function LoginPage() {
-  //입력값 관리
   const [id, setId] = useState("");
   const [pw, setPw] = useState("");
 
-  //로그인 버튼 클릭 시 실행
   const onSubmit = (e: FormEvent) => {
-    e.preventDefault(); //페이지 새로고침 막기
+    e.preventDefault();
 
-    //입력 검증(순서 중요)
     if (!id.trim()) {
       alert("[사용자 아이디] 반드시 입력(선택)하셔야 합니다.");
       return;
@@ -21,57 +136,44 @@ export default function LoginPage() {
       return;
     }
 
-    //여기에 실제 로그인 요청(API) 나중에 추가 가능
     console.log("로그인 시도: ", { id, pw });
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="relative w-full max-w-2xl border-2 border-green-200/70 rounded-lg p-12 md:0-16 overflow-hidden">
-        <img
-          src={watermark}
-          alt="워터마크 배경"
-          aria-hidden
-          className="pointer-events-none select-none absolute inset-0 m-auto w-[300px] opacity-20"
-        />
+    <PageContainer>
+      <LoginBox>
+        <WatermarkImage src={watermark} alt="워터마크 배경" aria-hidden />
 
-        <h1 className="relative text-center font-extrabold tracking-wide text-[#325694] opacity-100">
-          <span className="block text-7xl leading-none ">INHA SW</span>
-          <span className="block text-7xl mt-2 leading-none">4bit</span>
-        </h1>
+        <TitleContainer>
+          <MainTitle>INHA SW</MainTitle>
 
-        <form
-          onSubmit={onSubmit}
-          className="relative mt-16 space-y-10 max-w-sm mx-auto"
-        >
+          <SubTitle>4bit</SubTitle>
+        </TitleContainer>
+
+        <LoginForm onSubmit={onSubmit}>
           <div>
-            <label className="block text-sm text-gray-500 text-xl">ID</label>
-            <input
+            <InputLabel>ID</InputLabel>
+
+            <InputField
               type="text"
               value={id}
-              onChange={(e) => setId(e.target.value)} //입력값 저장
-              className="mt-1 w-full bg-transparent border-b-3 border-[#325694] focus:border-[#08457E] outline-none py-2"
+              onChange={(e) => setId(e.target.value)}
               placeholder=""
             />
           </div>
           <div>
-            <label className="block text-sm text-gray-500 text-xl">PW</label>
-            <input
+            <InputLabel>PW</InputLabel>
+            <InputField
               type="password"
               value={pw}
-              onChange={(e) => setPw(e.target.value)} //입력값 저장
-              className="mt-1 w-full bg-transparent border-b-3 border-[#325694] focus:border-[#08457E] outline-none py-2"
+              onChange={(e) => setPw(e.target.value)}
               placeholder=""
             />
           </div>
-          <button
-            type="submit"
-            className="mx-auto block w-44 rounded-2xl bg-[#325694] hover:bg-[#08457E] active:scale-[.99] text-white py-3 font-medium shadow-sm transition cursor-pointer"
-          >
-            로그인
-          </button>
-        </form>
-      </div>
-    </div>
+
+          <LoginButton type="submit">로그인</LoginButton>
+        </LoginForm>
+      </LoginBox>
+    </PageContainer>
   );
 }
