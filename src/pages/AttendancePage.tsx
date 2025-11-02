@@ -1,17 +1,130 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import styled from "@emotion/styled";
+
+const PageContainer = styled.div`
+  min-height: 100vh;
+  background-color: #f9fafb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+`;
+
+const Title = styled.h1`
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 2rem;
+  align-self: flex-start;
+`;
+
+const ContentBox = styled.div`
+  background-color: white;
+  width: 100%;
+  max-width: 48rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  border-radius: 0.375rem;
+`;
+
+const CodeInfoContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+`;
+
+const CodeDetail = styled.div`
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+`;
+
+const CodeLabel = styled.span`
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+`;
+
+const TimeLeftValue = styled.span`
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #284876;
+  font-variant-numeric: tabular-nums;
+`;
+
+const CodeValue = styled.span`
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #8b392b;
+  letter-spacing: 0.1em;
+`;
+
+const InputGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #374151;
+  font-size: 1.125rem;
+`;
+
+const TimeInput = styled.input`
+  width: 5rem;
+  border: 1px solid #93c5fd;
+  outline: none;
+  border-radius: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  text-align: center;
+
+  &:focus {
+    border-color: #2563eb;
+  }
+`;
+
+const BaseButton = styled.button`
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 0.125rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: none;
+
+  &:active {
+    transform: scale(0.98);
+  }
+`;
+
+const StopButton = styled(BaseButton)`
+  background-color: #c65a46;
+
+  &:hover {
+    background-color: #b14e3c;
+  }
+`;
+
+const GenerateButton = styled(BaseButton)`
+  background-color: #325694;
+
+  &:hover {
+    background-color: #284876;
+  }
+`;
+
 export default function AttendancePage() {
-  // 입력 상태
-  const [minute, setMinute] = useState("");
-  const [seconds, setSeconds] = useState("");
+  const [minute, setMinute] = useState("0");
+  const [seconds, setSeconds] = useState("0");
   const navigate = useNavigate();
 
-  // 생성된 코드, 남은 시간
   const [code, setCode] = useState("");
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
-  // 랜덤으로 000~999 코드 생성
   const generateRandomCode = () => {
     const newCode = Math.floor(Math.random() * 1000)
       .toString()
@@ -19,7 +132,6 @@ export default function AttendancePage() {
     setCode(newCode);
   };
 
-  // 코드 생성 버튼 클릭 시
   const handleGenerateCode = () => {
     if (!minute || !seconds) {
       alert("분과 초를 모두 선택해주세요.");
@@ -34,13 +146,12 @@ export default function AttendancePage() {
   };
 
   const handleStopAutoAttendance = () => {
-    setTimeLeft(null); //카운트 다운 끊기
-    setCode(""); //코드도 숨기기
+    setTimeLeft(null);
+    setCode("");
 
-    //minute,seconds는 그대로 두면 이전 값으로 다시 시작 가능
+    navigate("/result", { state: { code } });
   };
 
-  // 카운트다운
   useEffect(() => {
     if (timeLeft === null) return;
     if (timeLeft <= 0) return;
@@ -57,100 +168,76 @@ export default function AttendancePage() {
       const resetTimer = setTimeout(() => {
         setTimeLeft(null);
         setCode("");
-      }, 1000); // 1초 뒤 자동 초기화
+
+        navigate("/result", { state: { code } });
+      }, 1000);
       return () => clearTimeout(resetTimer);
     }
-  }, [timeLeft]);
+  }, [timeLeft, navigate, code]);
 
-  // 00:00 형식
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
-  // 지금 카운트다운 중인지
   const isRunning = timeLeft !== null && timeLeft > 0;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-6">
-      {/* 제목 */}
-      <h1 className="text-xl font-semibold text-gray-800 mb-8 self-start">
-        출석
-      </h1>
+    <PageContainer>
+      <Title>출석</Title>
 
-      {/* 흰 박스 */}
-      <div className="bg-white w-full max-w-3xl flex items-center justify-between p-8 shadow-sm rounded-md">
-        {/* 왼쪽: 입력 or 코드 */}
+      <ContentBox>
         {isRunning ? (
-          <div className="flex items-center gap-10">
-            {/* 남은시간 */}
-            <div className="flex items-baseline gap-2">
-              <span className="text-sm font-semibold text-gray-700">
-                남은시간:
-              </span>
-              <span className="text-xl font-semibold text-[#284876] tabular-nums">
+          <CodeInfoContainer>
+            <CodeDetail>
+              <CodeLabel>남은시간:</CodeLabel>
+              <TimeLeftValue>
                 {timeLeft !== null ? formatTime(timeLeft) : "00:00"}
-              </span>
-            </div>
+              </TimeLeftValue>
+            </CodeDetail>
 
-            {/* 인증번호 */}
-            <div className="flex items-baseline gap-2">
-              <span className="text-sm font-semibold text-gray-700">
-                인증번호:
-              </span>
-              <span className="text-2xl font-semibold text-[#8B392B] tracking-widest">
-                {code}
-              </span>
-            </div>
-          </div>
+            <CodeDetail>
+              <CodeLabel>인증번호:</CodeLabel>
+              <CodeValue>{code}</CodeValue>
+            </CodeDetail>
+          </CodeInfoContainer>
         ) : (
-          // 기본 입력 화면
-          <div className="flex items-center gap-2 text-gray-700 text-lg">
-            <label htmlFor="minute">시간</label>
-            <input
+          <InputGroup>
+            <label htmlFor="minute" className="font-semibold">
+              시간
+            </label>
+            <TimeInput
               id="minute"
               type="number"
               min="0"
               max="59"
               value={minute}
               onChange={(e) => setMinute(e.target.value)}
-              className="w-20 border border-blue-300 focus:border-blue-600 outline-none rounded-md px-2 py-1 text-center"
             />
-            <span>분</span>
-            <input
+            <span className="font-semibold">분</span>
+            <TimeInput
               id="seconds"
               type="number"
               min="0"
               max="59"
               value={seconds}
               onChange={(e) => setSeconds(e.target.value)}
-              className="w-20 border border-blue-300 focus:border-blue-600 outline-none rounded-md px-2 py-1 text-center"
             />
-            <span>초</span>
-          </div>
+            <span className="font-semibold">초</span>
+          </InputGroup>
         )}
-
-        {/* 오른쪽 버튼 */}
 
         {isRunning ? (
-          //카운트다운 중일 때: 빨간버튼
-          <button
-            onClick={handleStopAutoAttendance}
-            className="bg-[#C65A46] hover:bg-[#B14E3C] text-white px-6 py-2 rounded-sm font-medium trasition active:scale-[.98] cursor-pointer"
-          >
+          <StopButton onClick={handleStopAutoAttendance}>
             자동 출결 종료
-          </button>
+          </StopButton>
         ) : (
-          //평소: 파란 코드 생성버튼
-          <button
-            onClick={handleGenerateCode}
-            className="bg-[#325694] hover:bg-[#284876] text-white px-6 py-2 rounded-sm font-medium trasition active:scale-[.98] cursor-pointer"
-          >
+          <GenerateButton onClick={handleGenerateCode}>
             코드 생성
-          </button>
+          </GenerateButton>
         )}
-      </div>
-    </div>
+      </ContentBox>
+    </PageContainer>
   );
 }
